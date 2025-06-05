@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Шифроград</string>
+    <string name="tab_cipher">Шифр</string>
+    <string name="navigation_bottom">Полоса навигации</string>
+    <string name="first_launch_greeting_text">Это игра про декодирование шифра замены. Одной букве английского языка соответствует один символ. Находите пары СИМВОЛ-БУКВА в зашифрованном тексте во вкладке ШИФР (иконка домика) и указывайте их во вкладке ИЗМЕНИТЬ (иконка карандаша). Чтобы удалить привязывание, нажмите на надпись о нем (\"X >>> A\"). Удачи!</string>
+    <string name="tab_edit">Изменить</string>
+    <string name="map_symbol">Привязать символ:</string>
+    <string name="to_letter">К букве:</string>
+    <string name="map">Привязать!</string>
+    <string name="cipher_text" translatable="false">INTRODUCING MYSELF. hi! nice to meet you! my name is john smith. i am 19 and a student in college. the best food for me is bisque - a thick cream soup. i go to college in new york. my favorite courses are geometry, french, and history. english is my hardest course because i am quite lazy to prepare to exams. my professors are very friendly and smart. it’s my second year in college now. i love it! i live in a big house on ivy street. it’s near the college campus. i share the house with three other students. their names are bill, tony, and paul. we help each other with homework. on the weekend, we play football together. i have a younger brother. he just started high school. he is 14 and lives with my parents. they live on mulberry street in boston. sometimes they visit me in new york. i am happy when they visit. my mom always brings me sweets and candy when they come. i really miss them, too!</string>
+</resources>
