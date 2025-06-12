@@ -23,7 +23,6 @@ import com.ab.GameCipher.utils.appropriateDecryptedCharList
 import com.ab.GameCipher.utils.appropriateEncryptedCharList
 import com.ab.GameCipher.utils.decipherUsingMap
 
-
 @Composable
 fun GameCipherCipherPageContent(
     gameCipherUiState: GameCipherUiState,

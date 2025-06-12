@@ -1,12 +1,24 @@
 package com.ab.GameCipher.ui.composable
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.ab.GameCipher.GameCipherApplication
 import com.ab.GameCipher.data.PageType
+import com.ab.GameCipher.data.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
-class GameCipherViewModel : ViewModel() {
+class GameCipherViewModel(
+    private val userPreferencesRepository: UserPreferencesRepository
+): ViewModel() {
     private val _uiState = MutableStateFlow(GameCipherUiState())
     val uiState: StateFlow<GameCipherUiState> = _uiState
 
@@ -15,9 +27,11 @@ class GameCipherViewModel : ViewModel() {
     }
 
     private fun initializeUIState() {
-        // TODO: Get DecipherStateMap from LocalDB
-        _uiState.value =
-            GameCipherUiState()
+        _uiState.value = runBlocking {
+            GameCipherUiState(
+                decipherStateMap = userPreferencesRepository.decipherStateMapFlow.first()
+            )
+        }
     }
 
     fun updateEncryptedChar(newChar: Char) {
@@ -47,6 +61,7 @@ class GameCipherViewModel : ViewModel() {
                     decryptedChar = '-'
                 )
             }
+            saveDecipherUiState()
         }
     }
 
@@ -58,6 +73,13 @@ class GameCipherViewModel : ViewModel() {
                 decipherStateMap = result
             )
         }
+        saveDecipherUiState()
+    }
+
+    private fun saveDecipherUiState() {
+        viewModelScope.launch {
+            userPreferencesRepository.saveLayoutPreference(_uiState.value.decipherStateMap)
+        }
     }
 
     fun updateCurrentPage(pageType: PageType) {
@@ -65,6 +87,15 @@ class GameCipherViewModel : ViewModel() {
             it.copy(
                 currentPage = pageType
             )
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as GameCipherApplication)
+                GameCipherViewModel(application.userPreferencesRepository)
+            }
         }
     }
 }

@@ -28,7 +28,9 @@ import com.ab.GameCipher.data.PageType
 fun GameCipherApp(
     modifier: Modifier = Modifier
 ) {
-    val viewModel: GameCipherViewModel = viewModel()
+    val viewModel: GameCipherViewModel = viewModel(
+        factory = GameCipherViewModel.Factory
+    )
     val gameCipherUiState = viewModel.uiState.collectAsState().value
 
     val navigationItemContentList = listOf(
