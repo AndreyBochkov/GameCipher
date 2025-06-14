@@ -1,7 +1,11 @@
 package com.ab.GameCipher.ui.composable
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -28,7 +32,12 @@ fun GameCipherCipherPageContent(
     gameCipherUiState: GameCipherUiState,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier.fillMaxHeight()) {
+    LazyColumn(
+        modifier = modifier.fillMaxHeight(),
+        contentPadding = PaddingValues(
+            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+        )
+    ) {
         item {
             LayoutText(
                 text = decipherUsingMap(stringResource(R.string.cipher_text), gameCipherUiState.decipherStateMap),
@@ -49,7 +58,12 @@ fun GameCipherEditPageContent(
 ) {
     var encryptedExpanded by remember { mutableStateOf(false) }
     var decryptedExpanded by remember { mutableStateOf(false) }
-    LazyColumn(modifier = modifier.fillMaxHeight()) {
+    LazyColumn(
+        modifier = modifier.fillMaxHeight(),
+        contentPadding = PaddingValues(
+            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+        )
+    ) {
         item {
             LayoutText(stringResource(R.string.map_symbol))
         }
@@ -162,7 +176,12 @@ fun GameCipherEditPageContent(
 
 @Composable
 fun GameCipherFirstLaunchPageContent(modifier: Modifier = Modifier) {
-    LazyColumn(modifier = modifier.fillMaxHeight()) {
+    LazyColumn(
+        modifier = modifier.fillMaxHeight(),
+        contentPadding = PaddingValues(
+            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+        )
+    ) {
         item {
             LayoutText(
                 text = stringResource(R.string.first_launch_greeting_text)
