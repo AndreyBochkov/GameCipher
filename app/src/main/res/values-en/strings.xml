@@ -3,7 +3,7 @@
     <string name="app_name">GameCipher</string>
     <string name="tab_cipher">Home</string>
     <string name="navigation_bottom">Navigation Bar</string>
-    <string name="first_launch_greeting_text">This is a game about decoding replacement cipher. Every english letter corresponds to its own symbol. Find pairs SYMBOL-LETTER by looking through the encrypted text in the HOME page and specify them in the EDIT page. To delete mapping you can tap on it (for example, \"X >>> A\"). Good luck!</string>
+    <string name="first_launch_greeting_text">This is a game about decoding replacement cipher. Every English letter corresponds to its own symbol. Choose the level in the MENU page. Find pairs SYMBOL-LETTER by looking through the encrypted text in the HOME page and specify them in the EDIT page. If you don\'t guess, pair is marked red. To delete mapping you can tap on it (for example, on \"X >>> A\"). Good luck!</string>
     <string name="tab_edit">Edit</string>
     <string name="map_symbol">Map symbol:</string>
     <string name="to_letter">To letter:</string>

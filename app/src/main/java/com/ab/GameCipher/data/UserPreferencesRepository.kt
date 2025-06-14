@@ -78,11 +78,12 @@ class UserPreferencesRepository(
     // 🙂 <- this is Bob, i'll just leave him here ok?
 
     private fun serialize(list: List<Map<Char, Char>>): String {
-        return list.joinToString(";") { map ->
+        val temp = list.joinToString(";") { map ->
             map.entries.joinToString(":") { (key, value) ->
                 "${key}${value}"
             }
         }
+        return temp
     }
 
     private fun deserialize(serialized: String): List<Map<Char, Char>> {

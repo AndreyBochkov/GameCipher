@@ -79,16 +79,16 @@ fun GameCipherEditPageContent(
                     disabledContainerColor = MaterialTheme.colorScheme.onSurface
                 )
             ) {
-                LayoutText("${gameCipherUiState.encryptedChar}", setCustomFont = true)
+                LayoutText("${gameCipherUiState.cipherStateMap[gameCipherUiState.level][gameCipherUiState.encryptedChar]?:gameCipherUiState.encryptedChar}", setCustomFont = true)
             }
             DropdownMenu(
                 expanded = encryptedExpanded,
                 onDismissRequest = { encryptedExpanded = false },
             ) {
                 for (char in appropriateEncryptedCharList) {
-                    if (!gameCipherUiState.decipherStateMap[gameCipherUiState.level].containsKey(char)) {
+                    if (!gameCipherUiState.decipherStateMap[gameCipherUiState.level].containsKey(gameCipherUiState.cipherStateMap[gameCipherUiState.level][char])) {
                         DropdownMenuItem(
-                            text = { LayoutText("$char", setCustomFont = true) },
+                            text = { LayoutText("${gameCipherUiState.cipherStateMap[gameCipherUiState.level][char]}", setCustomFont = true) },
                             onClick = {
                                 updateEncryptedChar(char)
                                 encryptedExpanded = false
@@ -162,7 +162,7 @@ fun GameCipherEditPageContent(
                 onClick = {
                     onDeleteOptionPressed(it.key)
                 },
-                colors = if (gameCipherUiState.cipherStateMap[gameCipherUiState.level][it.key] == it.value.lowercaseChar()) ButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified)
+                colors = if (gameCipherUiState.cipherStateMap[gameCipherUiState.level][it.value.lowercaseChar()] == it.key) ButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified)
                 else ButtonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified),
                 modifier = Modifier.padding(bottom = 3.dp)
             ) {
@@ -193,12 +193,12 @@ fun GameCipherLevelSelectPageContent (
                 onClick = {
                     onLevelOptionPressed(it)
                 },
-                colors = if (it == gameCipherUiState.level) ButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified)
-                else ButtonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified),
+                colors = if (it == gameCipherUiState.level) ButtonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified)
+                else ButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified),
                 modifier = Modifier.padding(bottom = 3.dp)
             ) {
                 LayoutText(
-                    text = stringResource(R.string.level_sign) + (it+1).toString() + ": " + levelsPreviews[it] + "...",
+                    text = stringResource(R.string.level_sign) + (it+1).toString() + ": " + levelsPreviews[it].map { c -> gameCipherUiState.cipherStateMap[it][c]?:c }.joinToString("") + "...",
                     setCustomFont = true
                 )
             }

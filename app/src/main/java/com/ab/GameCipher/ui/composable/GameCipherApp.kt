@@ -80,6 +80,9 @@ fun GameCipherApp(
 
     val paddingPageContent = 18.dp
 
+    println(gameCipherUiState.cipherStateMap)
+    println(gameCipherUiState.decipherStateMap)
+
     Box(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -114,7 +117,7 @@ fun GameCipherApp(
                 PageType.LevelSelect -> {
                     GameCipherLevelSelectPageContent(
                         levelsPreviews = stringResource(R.string.cipher_text).split("$$").map { text ->
-                            text.slice(0..10)
+                            text.slice(0..20)
                         },
                         gameCipherUiState = gameCipherUiState,
                         onLevelOptionPressed = onLevelOptionPressed,

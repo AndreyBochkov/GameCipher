@@ -31,16 +31,21 @@ class GameCipherViewModel(
                 level = userPreferencesRepository.loadLevel(),
                 cipherStateMap = if (states.first.size == levelsMaxNumConst) states.first else {
                     val default = mutableListOf<Map<Char, Char>>()
-                    for (i in 0..levelsMaxNumConst) {
+                    for (i in 0..<levelsMaxNumConst) {
                         default += ('a'..'z').zip(('a'..'z').shuffled()).toMap()
                     }
-                    println(default)
                     viewModelScope.launch {
                         userPreferencesRepository.saveCipherState(default)
                     }
                     default.toList()
                 },
-                decipherStateMap = if (states.first.size == levelsMaxNumConst) states.second else listOf(emptyMap(), emptyMap(), emptyMap())
+                decipherStateMap = if (states.first.size == levelsMaxNumConst) states.second else {
+                    val default = mutableListOf<Map<Char, Char>>()
+                    for (i in 0..<levelsMaxNumConst) {
+                        default += mapOf()
+                    }
+                    default.toList()
+                }
             )
         }
     }
@@ -66,7 +71,7 @@ class GameCipherViewModel(
             _uiState.update {
                 val result: MutableList<Map<Char, Char>> = it.decipherStateMap.toMutableList()
                 val levelMap = result[it.level].toMutableMap()
-                levelMap[it.encryptedChar] = it.decryptedChar
+                levelMap[it.cipherStateMap[it.level][it.encryptedChar]!!] = it.decryptedChar
                 result[it.level] = levelMap.toMap()
                 it.copy(
                     decipherStateMap = result.toList(),
