@@ -8,4 +8,6 @@
     <string name="map_symbol">Map symbol:</string>
     <string name="to_letter">To letter:</string>
     <string name="map">Map!</string>
+    <string name="tab_level_select">Levels</string>
+    <string name="level_sign">"LEVEL "</string>
 </resources>

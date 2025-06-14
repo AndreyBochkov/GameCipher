@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -28,9 +29,7 @@ import com.ab.GameCipher.data.PageType
 fun GameCipherApp(
     modifier: Modifier = Modifier
 ) {
-    val viewModel: GameCipherViewModel = viewModel(
-        factory = GameCipherViewModel.Factory
-    )
+    val viewModel: GameCipherViewModel = viewModel()
     val gameCipherUiState = viewModel.uiState.collectAsState().value
 
     val navigationItemContentList = listOf(
@@ -43,6 +42,11 @@ fun GameCipherApp(
             pageType = PageType.Edit,
             icon = Icons.Default.Edit,
             text = stringResource(R.string.tab_edit)
+        ),
+        NavigationItemContent(
+            pageType = PageType.LevelSelect,
+            icon = Icons.Default.Menu,
+            text = stringResource(R.string.tab_level_select)
         ),
     )
 
@@ -70,6 +74,10 @@ fun GameCipherApp(
         viewModel.updateDeleteDecipherStateMap(encryptedChar)
     }
 
+    val onLevelOptionPressed = { newLevel: Int ->
+        viewModel.updateLevel(newLevel)
+    }
+
     val paddingPageContent = 18.dp
 
     Box(modifier = modifier) {
@@ -78,13 +86,19 @@ fun GameCipherApp(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.inverseOnSurface)
         ) {
+            val pageModifier = Modifier
+                .weight(1f)
+                .padding(
+                    start = paddingPageContent,
+                    top = paddingPageContent,
+                    end = paddingPageContent
+                )
+
             when (gameCipherUiState.currentPage) {
                 PageType.Cipher -> {
                     GameCipherCipherPageContent(
                         gameCipherUiState = gameCipherUiState,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = paddingPageContent, top = paddingPageContent, end = paddingPageContent)
+                        modifier = pageModifier
                     )
                 }
                 PageType.Edit -> {
@@ -94,16 +108,22 @@ fun GameCipherApp(
                         onDeleteOptionPressed = onDeleteOptionPressed,
                         updateEncryptedChar = updateEncryptedChar,
                         updateDecryptedChar = updateDecryptedChar,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = paddingPageContent, top = paddingPageContent, end = paddingPageContent)
+                        modifier = pageModifier
+                    )
+                }
+                PageType.LevelSelect -> {
+                    GameCipherLevelSelectPageContent(
+                        levelsPreviews = stringResource(R.string.cipher_text).split("$$").map { text ->
+                            text.slice(0..10)
+                        },
+                        gameCipherUiState = gameCipherUiState,
+                        onLevelOptionPressed = onLevelOptionPressed,
+                        modifier = pageModifier
                     )
                 }
                 else -> {
                     GameCipherFirstLaunchPageContent(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = paddingPageContent, top = paddingPageContent, end = paddingPageContent)
+                        modifier = pageModifier
                     )
                 }
             }

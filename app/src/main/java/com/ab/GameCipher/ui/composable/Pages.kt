@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ab.GameCipher.R
@@ -40,7 +41,7 @@ fun GameCipherCipherPageContent(
     ) {
         item {
             LayoutText(
-                text = decipherUsingMap(stringResource(R.string.cipher_text), gameCipherUiState.decipherStateMap),
+                text = decipherUsingMap(stringResource(R.string.cipher_text).split("$$")[gameCipherUiState.level], gameCipherUiState.cipherStateMap[gameCipherUiState.level], gameCipherUiState.decipherStateMap[gameCipherUiState.level]),
                 setCustomFont = true
             )
         }
@@ -85,7 +86,7 @@ fun GameCipherEditPageContent(
                 onDismissRequest = { encryptedExpanded = false },
             ) {
                 for (char in appropriateEncryptedCharList) {
-                    if (!gameCipherUiState.decipherStateMap.containsKey(char)) {
+                    if (!gameCipherUiState.decipherStateMap[gameCipherUiState.level].containsKey(char)) {
                         DropdownMenuItem(
                             text = { LayoutText("$char", setCustomFont = true) },
                             onClick = {
@@ -119,7 +120,7 @@ fun GameCipherEditPageContent(
                 onDismissRequest = { decryptedExpanded = false },
             ) {
                 for (char in appropriateDecryptedCharList) {
-                    if (!gameCipherUiState.decipherStateMap.containsValue(char)) {
+                    if (!gameCipherUiState.decipherStateMap[gameCipherUiState.level].containsValue(char)) {
                         DropdownMenuItem(
                             text = { LayoutText("$char", setCustomFont = true) },
                             onClick = {
@@ -156,17 +157,48 @@ fun GameCipherEditPageContent(
             HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
         }
 
-        items(gameCipherUiState.decipherStateMap.entries.toList()) {
+        items(gameCipherUiState.decipherStateMap[gameCipherUiState.level].entries.toList()) {
             Button(
                 onClick = {
                     onDeleteOptionPressed(it.key)
                 },
-                colors = if (it.key == it.value.lowercaseChar()) ButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer, disabledContentColor = MaterialTheme.colorScheme.tertiaryContainer, disabledContainerColor = MaterialTheme.colorScheme.onTertiaryContainer)
-                else ButtonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer, disabledContentColor = MaterialTheme.colorScheme.errorContainer, disabledContainerColor = MaterialTheme.colorScheme.onErrorContainer),
+                colors = if (gameCipherUiState.cipherStateMap[gameCipherUiState.level][it.key] == it.value.lowercaseChar()) ButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified)
+                else ButtonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified),
                 modifier = Modifier.padding(bottom = 3.dp)
             ) {
                 LayoutText(
                     text = it.key + " >>> " + it.value,
+                    setCustomFont = true
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GameCipherLevelSelectPageContent (
+    levelsPreviews: List<String>,
+    gameCipherUiState: GameCipherUiState,
+    onLevelOptionPressed: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxHeight(),
+        contentPadding = PaddingValues(
+            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+        )
+    ) {
+        items(levelsPreviews.indices.toList()) {
+            Button(
+                onClick = {
+                    onLevelOptionPressed(it)
+                },
+                colors = if (it == gameCipherUiState.level) ButtonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified)
+                else ButtonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer, disabledContentColor = Color.Unspecified, disabledContainerColor = Color.Unspecified),
+                modifier = Modifier.padding(bottom = 3.dp)
+            ) {
+                LayoutText(
+                    text = stringResource(R.string.level_sign) + (it+1).toString() + ": " + levelsPreviews[it] + "...",
                     setCustomFont = true
                 )
             }

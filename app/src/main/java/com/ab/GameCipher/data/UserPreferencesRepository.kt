@@ -15,57 +15,83 @@
  */
 package com.ab.GameCipher.data
 
-import android.util.Log
+import android.app.Application
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
-import java.io.IOException
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.firstOrNull
+
+private const val LAYOUT_PREFERENCE_NAME = "layout_preferences"
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+    name = LAYOUT_PREFERENCE_NAME
+)
 
 /*
  * Concrete class implementation to access data store
  */
 class UserPreferencesRepository(
-    private val dataStore: DataStore<Preferences>
+    private val context: Context
 ) {
-    private companion object {
-        val decipherStateMapSaved = stringPreferencesKey("decipher_state_map_saved")
-        const val TAG = "UserPreferencesRepo"
+    init {
+        require(context is Application) { "Use Application instead of the Context!" }
     }
 
-    val decipherStateMapFlow: Flow<Map<Char, Char>> = dataStore.data
-        .catch {
-            if (it is IOException) {
-                Log.e(TAG, "Error reading preferences.", it)
-                emit(emptyPreferences())
-            } else {
-                throw it
-            }
-        }
-        .map { preferences ->
-            val cached = preferences[decipherStateMapSaved]
-            if (cached == null) {
-                mapOf()
-            } else {
-                val result = mutableMapOf<Char, Char>()
-                for (i in cached.indices.step(2)) {
-                    result[cached[i]] = cached[i + 1]
-                }
-                result.toMap()
-            }
-        }
+    private val decipherStateSaved = stringPreferencesKey("decipher_state_map_saved")
+    private val cipherStateSaved = stringPreferencesKey("cipher_state_map_saved")
+    private val levelSaved = intPreferencesKey("level_saved")
 
-    suspend fun saveLayoutPreference(decipherStateMap: Map<Char, Char>) {
-        dataStore.edit { preferences ->
-            val result = StringBuilder()
-            for (k in decipherStateMap.keys) {
-                result.append(k.toString() + (decipherStateMap[k] ?: ""))
+    suspend fun saveLevel(level: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[levelSaved] = level
+        }
+    }
+
+    suspend fun loadLevel(): Int {
+        return (context.dataStore.data.firstOrNull()?:(return 0))[levelSaved]?:0
+    }
+
+    suspend fun saveDecipherState(decipherState: List<Map<Char, Char>>) {
+        context.dataStore.edit { preferences ->
+            preferences[decipherStateSaved] = serialize(decipherState)
+        }
+    }
+
+    suspend fun saveCipherState(cipherState: List<Map<Char, Char>>) {
+        context.dataStore.edit { preferences ->
+            preferences[cipherStateSaved] = serialize(cipherState)
+        }
+    }
+
+    suspend fun loadStates(): Pair<List<Map<Char, Char>>, List<Map<Char, Char>>> {
+        val preferences = context.dataStore.data.firstOrNull() ?:
+            return Pair(emptyList(), emptyList())
+        return Pair(
+            deserialize(preferences[cipherStateSaved]?:""),
+            deserialize(preferences[decipherStateSaved]?:"")
+        )
+    }
+
+    // 🙂 <- this is Bob, i'll just leave him here ok?
+
+    private fun serialize(list: List<Map<Char, Char>>): String {
+        return list.joinToString(";") { map ->
+            map.entries.joinToString(":") { (key, value) ->
+                "${key}${value}"
             }
-            preferences[decipherStateMapSaved] = result.toString()
+        }
+    }
+
+    private fun deserialize(serialized: String): List<Map<Char, Char>> {
+        if (serialized.isEmpty()) return emptyList()
+        return serialized.split(";").map { mapStr ->
+            if (mapStr.isEmpty()) emptyMap()
+            else mapStr.split(":").associate { pairStr ->
+                pairStr[0] to pairStr[1]
+            }
         }
     }
 }

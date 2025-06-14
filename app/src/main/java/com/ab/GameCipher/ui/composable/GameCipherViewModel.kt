@@ -1,24 +1,22 @@
 package com.ab.GameCipher.ui.composable
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.ab.GameCipher.GameCipherApplication
 import com.ab.GameCipher.data.PageType
 import com.ab.GameCipher.data.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+const val levelsMaxNumConst = 3
+
 class GameCipherViewModel(
-    private val userPreferencesRepository: UserPreferencesRepository
-): ViewModel() {
+    application: Application
+): AndroidViewModel(application) {
+    private val userPreferencesRepository = UserPreferencesRepository(application)
     private val _uiState = MutableStateFlow(GameCipherUiState())
     val uiState: StateFlow<GameCipherUiState> = _uiState
 
@@ -28,8 +26,21 @@ class GameCipherViewModel(
 
     private fun initializeUIState() {
         _uiState.value = runBlocking {
+            val states = userPreferencesRepository.loadStates()
             GameCipherUiState(
-                decipherStateMap = userPreferencesRepository.decipherStateMapFlow.first()
+                level = userPreferencesRepository.loadLevel(),
+                cipherStateMap = if (states.first.size == levelsMaxNumConst) states.first else {
+                    val default = mutableListOf<Map<Char, Char>>()
+                    for (i in 0..levelsMaxNumConst) {
+                        default += ('a'..'z').zip(('a'..'z').shuffled()).toMap()
+                    }
+                    println(default)
+                    viewModelScope.launch {
+                        userPreferencesRepository.saveCipherState(default)
+                    }
+                    default.toList()
+                },
+                decipherStateMap = if (states.first.size == levelsMaxNumConst) states.second else listOf(emptyMap(), emptyMap(), emptyMap())
             )
         }
     }
@@ -53,32 +64,47 @@ class GameCipherViewModel(
     fun updatePutDecipherStateMap() {
         if (_uiState.value.encryptedChar != '-' && _uiState.value.decryptedChar != '-') {
             _uiState.update {
-                val result: MutableMap<Char, Char> = it.decipherStateMap.toMutableMap()
-                result[it.encryptedChar] = it.decryptedChar
+                val result: MutableList<Map<Char, Char>> = it.decipherStateMap.toMutableList()
+                val levelMap = result[it.level].toMutableMap()
+                levelMap[it.encryptedChar] = it.decryptedChar
+                result[it.level] = levelMap.toMap()
                 it.copy(
-                    decipherStateMap = result.toMap(),
+                    decipherStateMap = result.toList(),
                     encryptedChar = '-',
                     decryptedChar = '-'
                 )
             }
-            saveDecipherUiState()
+            saveDecipherState()
         }
     }
 
     fun updateDeleteDecipherStateMap(char: Char) {
         _uiState.update {
-            val result: MutableMap<Char, Char> = it.decipherStateMap.toMutableMap()
-            result.remove(char)
+            val result: MutableList<Map<Char, Char>> = it.decipherStateMap.toMutableList()
+            val levelMap = result[it.level].toMutableMap()
+            levelMap.remove(char)
+            result[it.level] = levelMap.toMap()
             it.copy(
                 decipherStateMap = result
             )
         }
-        saveDecipherUiState()
+        saveDecipherState()
     }
 
-    private fun saveDecipherUiState() {
+    fun updateLevel(newLevel: Int) {
+        _uiState.update {
+            it.copy(
+                level = newLevel
+            )
+        }
         viewModelScope.launch {
-            userPreferencesRepository.saveLayoutPreference(_uiState.value.decipherStateMap)
+            userPreferencesRepository.saveLevel(newLevel)
+        }
+    }
+
+    private fun saveDecipherState() {
+        viewModelScope.launch {
+            userPreferencesRepository.saveDecipherState(_uiState.value.decipherStateMap)
         }
     }
 
@@ -87,15 +113,6 @@ class GameCipherViewModel(
             it.copy(
                 currentPage = pageType
             )
-        }
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val application = (this[APPLICATION_KEY] as GameCipherApplication)
-                GameCipherViewModel(application.userPreferencesRepository)
-            }
         }
     }
 }
