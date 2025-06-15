@@ -39,7 +39,7 @@ class GameCipherViewModel(
                     }
                     default.toList()
                 },
-                decipherStateMap = if (states.first.size == levelsMaxNumConst) states.second else {
+                decipherStateMap = if (states.second.size == levelsMaxNumConst) states.second else {
                     val default = mutableListOf<Map<Char, Char>>()
                     for (i in 0..<levelsMaxNumConst) {
                         default += mapOf()
