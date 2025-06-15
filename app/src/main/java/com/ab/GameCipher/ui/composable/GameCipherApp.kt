@@ -78,6 +78,10 @@ fun GameCipherApp(
         viewModel.updateLevel(newLevel)
     }
 
+    val onDeleteProgressPressed = {
+        viewModel.deleteProgress()
+    }
+
     val paddingPageContent = 18.dp
 
     println(gameCipherUiState.cipherStateMap)
@@ -111,6 +115,7 @@ fun GameCipherApp(
                         onDeleteOptionPressed = onDeleteOptionPressed,
                         updateEncryptedChar = updateEncryptedChar,
                         updateDecryptedChar = updateDecryptedChar,
+                        onDeleteProgressPressed = onDeleteProgressPressed,
                         modifier = pageModifier
                     )
                 }

@@ -107,6 +107,17 @@ class GameCipherViewModel(
         }
     }
 
+    fun deleteProgress() {
+        _uiState.update {
+            val result: MutableList<Map<Char, Char>> = it.decipherStateMap.toMutableList()
+            result[it.level] = mapOf()
+            it.copy(
+                decipherStateMap = result
+            )
+        }
+        saveDecipherState()
+    }
+
     private fun saveDecipherState() {
         viewModelScope.launch {
             userPreferencesRepository.saveDecipherState(_uiState.value.decipherStateMap)

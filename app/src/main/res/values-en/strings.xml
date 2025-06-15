@@ -10,4 +10,6 @@
     <string name="map">Map!</string>
     <string name="tab_level_select">Levels</string>
     <string name="level_sign">"LEVEL "</string>
+    <string name="delete_progress">Delete level progress</string>
+    <string name="are_you_sure">Are you sure?</string>
 </resources>

@@ -55,10 +55,12 @@ fun GameCipherEditPageContent(
     onDeleteOptionPressed: (Char) -> Unit,
     updateEncryptedChar: (Char) -> Unit,
     updateDecryptedChar: (Char) -> Unit,
+    onDeleteProgressPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var encryptedExpanded by remember { mutableStateOf(false) }
     var decryptedExpanded by remember { mutableStateOf(false) }
+    var deleteProgressExpanded by remember { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier.fillMaxHeight(),
         contentPadding = PaddingValues(
@@ -75,8 +77,8 @@ fun GameCipherEditPageContent(
                 colors = ButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface,
-                    disabledContentColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSurface
+                    disabledContentColor = Color.Unspecified,
+                    disabledContainerColor = Color.Unspecified
                 )
             ) {
                 LayoutText("${gameCipherUiState.cipherStateMap[gameCipherUiState.level][gameCipherUiState.encryptedChar]?:gameCipherUiState.encryptedChar}", setCustomFont = true)
@@ -109,8 +111,8 @@ fun GameCipherEditPageContent(
                 colors = ButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface,
-                    disabledContentColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSurface
+                    disabledContentColor = Color.Unspecified,
+                    disabledContainerColor = Color.Unspecified
                 )
             ) {
                 LayoutText("${gameCipherUiState.decryptedChar}", setCustomFont = true)
@@ -145,8 +147,8 @@ fun GameCipherEditPageContent(
                 colors = ButtonColors(
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                    disabledContentColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    disabledContainerColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    disabledContentColor = Color.Unspecified,
+                    disabledContainerColor = Color.Unspecified
                 )
             ) {
                 LayoutText(stringResource(R.string.map))
@@ -157,7 +159,7 @@ fun GameCipherEditPageContent(
             HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
         }
 
-        items(gameCipherUiState.decipherStateMap[gameCipherUiState.level].entries.toList()) {
+        items(gameCipherUiState.decipherStateMap[gameCipherUiState.level].entries.toList().reversed()) {
             Button(
                 onClick = {
                     onDeleteOptionPressed(it.key)
@@ -170,6 +172,42 @@ fun GameCipherEditPageContent(
                     text = it.key + " >>> " + it.value,
                     setCustomFont = true
                 )
+            }
+        }
+
+        if (gameCipherUiState.decipherStateMap[gameCipherUiState.level].keys.isNotEmpty()) {
+            item {
+                HorizontalDivider(modifier = Modifier.padding(top = 50.dp, bottom = 10.dp))
+            }
+
+            item {
+                Button(
+                    onClick = { deleteProgressExpanded = !deleteProgressExpanded },
+                    colors = ButtonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        disabledContentColor = Color.Unspecified,
+                        disabledContainerColor = Color.Unspecified
+                    )
+                ) {
+                    LayoutText(stringResource(R.string.delete_progress))
+                }
+                DropdownMenu(
+                    expanded = deleteProgressExpanded,
+                    onDismissRequest = { deleteProgressExpanded = false },
+                ) {
+                    LayoutText(stringResource(R.string.are_you_sure))
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = {
+                            LayoutText(stringResource(R.string.delete_progress))
+                        },
+                        onClick = {
+                            onDeleteProgressPressed()
+                            deleteProgressExpanded = false
+                        }
+                    )
+                }
             }
         }
     }
