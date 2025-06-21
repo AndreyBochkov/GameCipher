@@ -12,4 +12,10 @@
     <string name="level_sign">"LEVEL "</string>
     <string name="delete_progress">Delete level progress</string>
     <string name="are_you_sure">Are you sure?</string>
+    <string name="toast_copied">Copied!</string>
+    <string name="top_bar_menu">Menu</string>
+    <string name="top_bar_export">Export progress to the clipboard</string>
+    <string name="top_bar_import">Import progress from clipboard</string>
+    <string name="toast_error">An error occurred!</string>
+    <string name="toast_success">Success!</string>
 </resources>

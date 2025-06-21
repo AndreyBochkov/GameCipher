@@ -1,17 +1,22 @@
 package com.ab.GameCipher.ui.composable
 
 import android.app.Application
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ab.GameCipher.data.PageType
 import com.ab.GameCipher.data.UserPreferencesRepository
+import com.ab.GameCipher.utils.deserialize
+import com.ab.GameCipher.utils.serialize
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.Base64
 
-const val levelsMaxNumConst = 3
+const val levelsMaxNumConst = 5
 
 class GameCipherViewModel(
     application: Application
@@ -34,9 +39,6 @@ class GameCipherViewModel(
                     for (i in 0..<levelsMaxNumConst) {
                         default += ('a'..'z').zip(('a'..'z').shuffled()).toMap()
                     }
-                    viewModelScope.launch {
-                        userPreferencesRepository.saveCipherState(default)
-                    }
                     default.toList()
                 },
                 decipherStateMap = if (states.second.size == levelsMaxNumConst) states.second else {
@@ -48,6 +50,7 @@ class GameCipherViewModel(
                 }
             )
         }
+        saveCipherState()
     }
 
     fun updateEncryptedChar(newChar: Char) {
@@ -118,9 +121,52 @@ class GameCipherViewModel(
         saveDecipherState()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getExportableString(): String {
+        return Base64.getEncoder().encodeToString((serialize(_uiState.value.cipherStateMap) + "|" + serialize(_uiState.value.decipherStateMap)).toByteArray())
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun importString(exported: String, exception: () -> Unit, success: () -> Unit) {
+        val serializedMaps: List<String>
+        try {
+            serializedMaps = String(Base64.getDecoder().decode(exported)).split("|")
+        } catch (e: Throwable) {
+            exception()
+            return
+        }
+        if (serializedMaps.size != 2) {
+            exception()
+            return
+        }
+        val states = deserialize(serializedMaps[0]) to deserialize(serializedMaps[1])
+        if (states.first.size != levelsMaxNumConst || states.second.size != levelsMaxNumConst) {
+            exception()
+            return
+        }
+        _uiState.update {
+            it.copy(
+                level = 0,
+                cipherStateMap = states.first,
+                decipherStateMap = states.second,
+                encryptedChar = '-',
+                decryptedChar = '-'
+            )
+        }
+        saveCipherState()
+        saveDecipherState()
+        success()
+    }
+
     private fun saveDecipherState() {
         viewModelScope.launch {
             userPreferencesRepository.saveDecipherState(_uiState.value.decipherStateMap)
+        }
+    }
+
+    private fun saveCipherState() {
+        viewModelScope.launch {
+            userPreferencesRepository.saveCipherState(_uiState.value.cipherStateMap)
         }
     }
 

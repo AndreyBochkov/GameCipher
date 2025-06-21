@@ -1,11 +1,8 @@
 package com.ab.GameCipher.ui.composable
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -36,7 +33,7 @@ fun GameCipherCipherPageContent(
     LazyColumn(
         modifier = modifier.fillMaxHeight(),
         contentPadding = PaddingValues(
-            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+            top = 18.dp,
         )
     ) {
         item {
@@ -64,7 +61,7 @@ fun GameCipherEditPageContent(
     LazyColumn(
         modifier = modifier.fillMaxHeight(),
         contentPadding = PaddingValues(
-            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+            top = 18.dp,
         )
     ) {
         item {
@@ -223,7 +220,7 @@ fun GameCipherLevelSelectPageContent (
     LazyColumn(
         modifier = modifier.fillMaxHeight(),
         contentPadding = PaddingValues(
-            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+            top = 18.dp,
         )
     ) {
         items(levelsPreviews.indices.toList()) {
@@ -249,7 +246,7 @@ fun GameCipherFirstLaunchPageContent(modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier.fillMaxHeight(),
         contentPadding = PaddingValues(
-            top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding(),
+            top = 18.dp,
         )
     ) {
         item {

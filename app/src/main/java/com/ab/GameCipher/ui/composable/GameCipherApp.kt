@@ -1,5 +1,9 @@
 package com.ab.GameCipher.ui.composable
 
+import android.content.Context
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,12 +14,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.testTag
@@ -24,9 +41,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ab.GameCipher.R
 import com.ab.GameCipher.data.PageType
+import com.ab.GameCipher.utils.copyToClipboard
+import com.ab.GameCipher.utils.getFromClipboard
 
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameCipherApp(
+    context: Context,
     modifier: Modifier = Modifier
 ) {
     val viewModel: GameCipherViewModel = viewModel()
@@ -82,7 +104,23 @@ fun GameCipherApp(
         viewModel.deleteProgress()
     }
 
-    val paddingPageContent = 18.dp
+    val exportProgress = {
+        copyToClipboard(context, viewModel.getExportableString())
+        Toast.makeText(context, context.getString(R.string.toast_copied), Toast.LENGTH_SHORT).show()
+    }
+
+    val importProgress = {
+        viewModel.importString(
+            exported = getFromClipboard(context),
+            exception = {
+                Toast.makeText(context, context.getString(R.string.toast_error), Toast.LENGTH_SHORT).show()
+            },
+            success = {
+                Toast.makeText(context,
+                    context.getString(R.string.toast_success), Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
 
     println(gameCipherUiState.cipherStateMap)
     println(gameCipherUiState.decipherStateMap)
@@ -93,12 +131,16 @@ fun GameCipherApp(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.inverseOnSurface)
         ) {
+            GameCipherTopAppBar(
+                scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
+                exportProgress = exportProgress,
+                importProgress = importProgress
+            )
+
             val pageModifier = Modifier
                 .weight(1f)
                 .padding(
-                    start = paddingPageContent,
-                    top = paddingPageContent,
-                    end = paddingPageContent
+                    horizontal = 18.dp
                 )
 
             when (gameCipherUiState.currentPage) {
@@ -170,4 +212,61 @@ private fun GameCipherBottomNavigationBar(
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GameCipherTopAppBar(
+    modifier: Modifier = Modifier,
+    exportProgress: () -> Unit,
+    importProgress: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior
+) {
+    CenterAlignedTopAppBar(
+        scrollBehavior = scrollBehavior,
+        title = {
+            Text(
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+        },
+        modifier = modifier,
+        navigationIcon = {
+            var menuExpanded by remember { mutableStateOf(false) }
+            IconButton(onClick = {
+                menuExpanded = !menuExpanded
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = stringResource(R.string.top_bar_menu)
+                )
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = {
+                    menuExpanded = false
+                }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        LayoutText(stringResource(R.string.top_bar_export))
+                    },
+                    onClick = {
+                        exportProgress()
+                        menuExpanded = false
+                    }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = {
+                        LayoutText(stringResource(R.string.top_bar_import))
+                    },
+                    onClick = {
+                        importProgress()
+                        menuExpanded = false
+                    }
+                )
+            }
+        },
+    )
 }
